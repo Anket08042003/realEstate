@@ -1,8 +1,16 @@
+// auth.route.js
 import express from 'express';
-import { Signup } from '../controllers/auth.controller.js';
+import { signup } from '../controllers/auth.controller.js';
 
-const authRouter= express.Router();
+const router = express.Router();
 
-authRouter.post('/signup', Signup);
+router.post('/signup', async (req, res) => {
+  try {
+    await signup(req, res);
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+});
 
-export default authRouter;
+export default router;
