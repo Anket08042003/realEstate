@@ -26,8 +26,11 @@ export const signin = async (req, res) => {
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
+    const { password: pass, ...rest } = user._doc;
+
     // Set the cookie and send success response
-    res.cookie('access_token', token, { httpOnly: true }).status(200).json({ message: 'Signin successful' });
+    res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
+
 
   } catch (err) {
     // Log error and send internal server error response
