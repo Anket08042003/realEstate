@@ -1,69 +1,34 @@
-// auth.controller.js
-import User from '../models/user.model.js'; 
-import bcryptjs from 'bcryptjs'
-import jwt from 'jsonwebtoken'; 
+import User from '../models/user.model.js';
+import bcryptjs from 'bcryptjs';
+import { errorHandler } from '../utils/error.js';
+import jwt from 'jsonwebtoken';
 
-export const signin = async (req, res) => {
-  console.log('signin', req.body);
-  const { email, password } = req.body;
-
+export const signup = async (req, res, next) => {
+  const { username, email, password } = req.body;
+  const hashedPassword = bcryptjs.hashSync(password, 10);
+  const newUser = new User({ username, email, password: hashedPassword });
   try {
-    // Find user by email
-    const user = await User.findOne({ email });
-    if (!user) {
-      // User not found
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    // Compare provided password with stored hashed password
-    const validPassword = bcryptjs.compareSync(password, user.password);
-    console.log(validPassword);
-    if (!validPassword) {
-      // Invalid credentials
-      return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
-
-    const { password: pass, ...rest } = user._doc;
-
-    // Set the cookie and send success response
-    res.cookie('access_token', token, { httpOnly: true }).status(200).json(rest);
-
-
-  } catch (err) {
-    // Log error and send internal server error response
-    console.error('Error during user signin:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
+    await newUser.save();
+    res.status(201).json('User created successfully!');
+  } catch (error) {
+    next(error);
   }
 };
 
-export const signup = async (req, res) => {
-  console.log('Signup request body:', req.body);
-  const { username, email, password } = req.body;
-
-  if (!username || !email || !password) {
-    return res.status(400).json({ message: 'All fields are required' });
-  }
-
+export const signin = async (req, res, next) => {
+  const { email, password } = req.body;
   try {
-    const existingUser = await User.findOne({ email });
-
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
-    }
-
-    // Hash the password before saving it
-    const salt = bcryptjs.genSaltSync(10);
-    const hashedPassword = bcryptjs.hashSync(password, salt);
-
-    const newUser = new User({ username, email, password: hashedPassword });
-    await newUser.save();
-
-    res.status(201).json({ message: 'User created successfully' });
+    const validUser = await User.findOne({ email });
+    if (!validUser) return next(errorHandler(404, 'User not found!'));
+    const validPassword = bcryptjs.compareSync(password, validUser.password);
+    if (!validPassword) return next(errorHandler(401, 'Wrong credentials!'));
+    const token = jwt.sign({ id: validUser._id }, process.env.JWT_SECRET);
+    const { password: pass, ...rest } = validUser._doc;
+    res
+      .cookie('access_token', token, { httpOnly: true })
+      .status(200)
+      .json(rest);
   } catch (error) {
-    console.error('Error during user signup:', error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    next(error);
   }
 };
