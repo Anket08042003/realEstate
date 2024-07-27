@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import userRouter from './routes/user.route.js';
 import authRouter from './routes/auth.route.js';
+import cookieParser from 'cookie-parser';
 
 dotenv.config();
 
@@ -25,7 +26,7 @@ app.use(express.json());
 
 // Enable CORS for all origins
 app.use(cors());
-
+app.use(cookieParser());
 // Or, you can restrict CORS to specific origins
 // app.use(cors({
 //   origin: 'http://localhost:5173'
