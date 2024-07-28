@@ -7,16 +7,16 @@ import {
   uploadBytesResumable,
 } from 'firebase/storage';
 import { app } from '../firebase';
-// import {
-//   updateUserStart,
-//   updateUserSuccess,
-//   updateUserFailure,
-//   deleteUserFailure,
-//   deleteUserStart,
-//   deleteUserSuccess,
-//   signOutUserStart,
-// } from '../redux/user/userSlice';
-// import { useDispatch } from 'react-redux';
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  signOutUserStart,
+} from '../redux/user/userSlice';
+import { useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 export default function Profile() {
   const fileRef = useRef(null);
@@ -28,7 +28,7 @@ export default function Profile() {
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [showListingsError, setShowListingsError] = useState(false);
   const [userListings, setUserListings] = useState([]);
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   // firebase storage
   // allow read;
